@@ -49,7 +49,7 @@
         }
         return shaderID;
     }
-    bool add_shader_program(GLuint &shaderProgram, const std::string vs, const std::string fs)
+    void add_shader_program(GLuint &shaderProgram, const std::string vs, const std::string fs)
     {
         //компилируем шейдеры и связываем их с программой
         shaderProgram = glCreateProgram(); 
