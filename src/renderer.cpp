@@ -78,12 +78,12 @@
         width = w;
         height = h;
 
-
         GLfloat vertices[] = {
-            0.5f,  0.5f, 0.0f,  // Верхний правый угол
-            0.5f, -0.5f, 0.0f,  // Нижний правый угол
-            -0.5f, -0.5f, 0.0f,  // Нижний левый угол
-            -0.5f,  0.5f, 0.0f   // Верхний левый угол
+            // координаты        // цвета            // текстурные координаты
+            0.5f,  0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   0.0f, 0.0f, // Верхний правый угол
+            0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 0.0f,   0.0f, 1.0f, // Нижний правый угол
+            -0.5f, -0.5f, 0.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f, // Нижний левый угол
+            -0.5f,  0.5f, 0.0f,    0.0f, 0.0f, 0.0f,    1.0f, 0.0f // Верхний левый угол
         };
         GLuint indices[] = {
             0, 1, 3,   // Первый треугольник
@@ -103,17 +103,39 @@
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     // 3. Устанавливаем указатели на вершинные атрибуты
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);  
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);  
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);  
     // 4. Отвязываем VAO (НЕ EBO)
     glBindVertexArray(0);
 
     add_shader_program(shaderProgram,"shaders/simple.vert","shaders/simple.frag");
     }
-    void Renderer::Render()
+    void Renderer::Render(unsigned char *data, int width, int height)
     {
+        unsigned int texture;
+        // Загрузка и создание текстуры
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture); // все последующие GL_TEXTURE_2D-операции теперь будут влиять на данный текстурный объект
+        
+        // Установка параметров наложения текстуры
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // установка метода наложения текстуры GL_REPEAT (стандартный метод наложения)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        
+        // Установка параметров фильтрации текстуры
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
+        // Загрузка изображения, создание текстуры и генерирование мипмап-уровней
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
         glUseProgram(shaderProgram);
-        glUniform3f(glGetUniformLocation(shaderProgram, "color"),0,1,0);
+        //glUniform3f(glGetUniformLocation(shaderProgram, "color"),0,1,0);
+        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);

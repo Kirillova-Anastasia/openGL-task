@@ -1,6 +1,9 @@
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h" 
 #include <glm/glm.hpp>
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
+#include <iostream>
 #include "renderer.h"
 
 bool running = true;
@@ -25,7 +28,7 @@ int main()
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_Window *window = SDL_CreateWindow(
-        "SDL2/OpenGL Demo", 0, 0, 640, 480, SDL_WINDOW_OPENGL);
+        "SDL2/OpenGL Demo", 0, 0, 1600, 900, SDL_WINDOW_OPENGL);
 
     // Создаём контекст OpenGL, связанный с окном.
     SDL_GLContext glcontext = SDL_GL_CreateContext(window);
@@ -37,27 +40,35 @@ int main()
     renderer.Init(window,width,height);
     SDL_Event event;
 
-    while (running)
-    {
-        while (SDL_PollEvent(&event) != 0)
+    int width_tex = 0, height_tex = 0, nrChannels = 0;
+    unsigned char *data = stbi_load("src/flag.jpg", &width_tex, &height_tex, &nrChannels, 0);
+    if (data) {
+        while (running)
         {
-            if (event.type == SDL_QUIT)
+            while (SDL_PollEvent(&event) != 0)
             {
-                running = false;
+                if (event.type == SDL_QUIT)
+                {
+                    running = false;
+                }
+                else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
+                {
+                    process_input(window,event);
+                }
             }
-            else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
-            {
-                process_input(window,event);
-            }
+            // Заливка кадра чёрным цветом средствами OpenGL
+            glClearColor(0.3,0.3,0.3,1);
+            glClear(GL_COLOR_BUFFER_BIT);
+            // Обновление и рисование сцены
+            renderer.Render(data, width_tex, height_tex);
+            // В конце - вывод нарисованного кадра в окно на экране
+            SDL_GL_SwapWindow(window);
         }
-        // Заливка кадра чёрным цветом средствами OpenGL
-        glClearColor(1,0,0,1);
-        glClear(GL_COLOR_BUFFER_BIT);
-        // Обновление и рисование сцены
-        renderer.Render();
-        // В конце - вывод нарисованного кадра в окно на экране
-        SDL_GL_SwapWindow(window);
+    } else {
+        std::cout << "Failed to load texture" << std::endl;
     }
+    stbi_image_free(data);
+    
     SDL_GL_DeleteContext(glcontext);
     return 0;
 }

@@ -8,11 +8,11 @@ class Renderer
 {
 public:
     void Init(SDL_Window *window, int w, int h);
-    void Render();
+    void Render(unsigned char *data, int width, int height);
     void Close();
 private:
     GLuint VAO, VBO, EBO;
     GLuint shaderProgram;
     SDL_Window *window;
-    int width,height;
+    int width, height;
 };
