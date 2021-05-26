@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 
-int rect_number = 1;
+int rect_number = 16;
 
 int add_shader(std::string fileName, GLuint shaderProgram, GLenum shaderType)
 {
@@ -80,17 +80,35 @@ void Renderer::Init(SDL_Window *_window, int w, int h)
     width = w;
     height = h;
 
-    GLfloat vertices[] = {
-        // координаты           // текстурные координаты
-        0.5f,  0.5f, 0.0f,  0.0f, 0.0f, // Верхний правый угол
-        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, // Нижний правый угол
-        -0.5f, -0.5f, 0.0f,    1.0f, 1.0f, // Нижний левый угол
-        -0.5f,  0.5f, 0.0f,   1.0f, 0.0f // Верхний левый угол
-    };
-    GLuint indices[] = {
-        0, 1, 3,   // Первый треугольник
-        1, 2, 3    // Второй треугольник
-    };  
+    GLfloat scale = 0.1f;
+    GLfloat flag_width = 4*scale,flag_height = 3*scale;
+    GLfloat shift = flag_width / rect_number, tex_shift = 1.0f / rect_number;
+    GLfloat vertices[(rect_number + 1) * 10];
+    for (int i = 0; i < rect_number + 1; ++i) {
+        //верхняя точка
+        vertices[i*10] = -flag_width/2 + i*shift;
+        vertices[i*10+1] = flag_height/2;
+        vertices[i*10+2] = 0.0f;
+        vertices[i*10+3] = 1.0f - i*tex_shift;
+        vertices[i*10+4] = 0.0f;
+
+        //нижняя точка
+        vertices[i*10+5] = -flag_width/2 + i*shift;
+        vertices[i*10+6] = -flag_height/2;
+        vertices[i*10+7] = 0.0f;
+        vertices[i*10+8] = 1.0f - i*tex_shift;
+        vertices[i*10+9] = 1.0f;
+    }
+
+    GLuint indices[rect_number * 6];
+    for (int i = 0; i < rect_number; ++i) {
+        indices[i*6] = i*2;
+        indices[i*6+1] = i*2+2;
+        indices[i*6+2] = i*2+3;
+        indices[i*6+3] = i*2+3;
+        indices[i*6+4] = i*2+1;
+        indices[i*6+5] = i*2;
+    }
 
 // 1. Создаем буферы
     glGenBuffers(1, &VAO);
@@ -137,7 +155,7 @@ void Renderer::Render(unsigned char *data, int width, int height)
     //glUniform3f(glGetUniformLocation(shaderProgram, "color"),0,1,0);
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, rect_number*6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 void Renderer::Close()
