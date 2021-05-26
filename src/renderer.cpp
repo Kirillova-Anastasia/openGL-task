@@ -83,7 +83,7 @@ void Renderer::Init(SDL_Window *_window, int w, int h)
     GLfloat scale = 0.1f;
     GLfloat flag_width = 4*scale,flag_height = 3*scale;
     GLfloat shift = flag_width / rect_number, tex_shift = 1.0f / rect_number;
-    GLfloat vertices[(rect_number + 1) * 10];
+    GLfloat vertices[(rect_number + 1) * 10 + 20];
     for (int i = 0; i < rect_number + 1; ++i) {
         //верхняя точка
         vertices[i*10] = -flag_width/2 + i*shift;
@@ -99,8 +99,36 @@ void Renderer::Init(SDL_Window *_window, int w, int h)
         vertices[i*10+8] = 1.0f - i*tex_shift;
         vertices[i*10+9] = 1.0f;
     }
+    //Флагштог
+    //верхняя левая точка
+    vertices[(rect_number + 1)*10] = -flag_width/2 - shift/4;
+    vertices[(rect_number + 1)*10+1] = flag_height/2;
+    vertices[(rect_number + 1)*10+2] = 0.0f;
+    vertices[(rect_number + 1)*10+3] = -1.0f;
+    vertices[(rect_number + 1)*10+4] = 0.0f;
 
-    GLuint indices[rect_number * 6];
+    //нижняя левая точка
+    vertices[(rect_number + 1)*10+5] = -flag_width/2 - shift/4;
+    vertices[(rect_number + 1)*10+6] = -3*flag_height/2;
+    vertices[(rect_number + 1)*10+7] = 0.0f;
+    vertices[(rect_number + 1)*10+8] = -1.0f;
+    vertices[(rect_number + 1)*10+9] = 0.0f;
+
+    //верхняя правая точка
+    vertices[(rect_number + 2)*10] = -flag_width/2;
+    vertices[(rect_number + 2)*10+1] = flag_height/2;
+    vertices[(rect_number + 2)*10+2] = 0.0f;
+    vertices[(rect_number + 2)*10+3] = -1.0f;
+    vertices[(rect_number + 2)*10+4] = 0.0f;
+
+    //нижняя правая точка
+    vertices[(rect_number + 2)*10+5] = -flag_width/2;
+    vertices[(rect_number + 2)*10+6] = -3*flag_height/2;
+    vertices[(rect_number + 2)*10+7] = 0.0f;
+    vertices[(rect_number + 2)*10+8] = -1.0f;
+    vertices[(rect_number + 2)*10+9] = 0.0f;
+
+    GLuint indices[(rect_number+1) * 6];
     for (int i = 0; i < rect_number; ++i) {
         indices[i*6] = i*2;
         indices[i*6+1] = i*2+2;
@@ -109,6 +137,12 @@ void Renderer::Init(SDL_Window *_window, int w, int h)
         indices[i*6+4] = i*2+1;
         indices[i*6+5] = i*2;
     }
+    indices[rect_number*6] = (rect_number + 1)*2;
+    indices[rect_number*6+1] = (rect_number + 1)*2 + 2;
+    indices[rect_number*6+2] = (rect_number + 1)*2 + 3;
+    indices[rect_number*6+3] = (rect_number + 1)*2 + 3;
+    indices[rect_number*6+4] = (rect_number + 1)*2 + 1;
+    indices[rect_number*6+5] = (rect_number + 1)*2;
 
 // 1. Создаем буферы
     glGenBuffers(1, &VAO);
@@ -155,7 +189,7 @@ void Renderer::Render(unsigned char *data, int width, int height)
     //glUniform3f(glGetUniformLocation(shaderProgram, "color"),0,1,0);
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, rect_number*6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, (rect_number+1)*6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 void Renderer::Close()
