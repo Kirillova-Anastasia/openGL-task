@@ -4,6 +4,10 @@
 #include <fstream>
 #include <sstream>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 int rect_number = 16;
 
 int add_shader(std::string fileName, GLuint shaderProgram, GLenum shaderType)
@@ -80,11 +84,11 @@ void Renderer::Init(SDL_Window *_window, int w, int h)
     width = w;
     height = h;
 
-    GLfloat scale = 0.1f;
+    GLfloat scale = 0.04f;
     flag_width = 3*scale;
     flag_height = 3*scale;
     GLfloat shift = flag_width / rect_number, tex_shift = 1.0f / rect_number;
-    GLfloat vertices[(rect_number + 1) * 10 + 20];
+    GLfloat vertices[(rect_number + 1) * 10 + 40];
     for (int i = 0; i < rect_number + 1; ++i) {
         //верхняя точка
         vertices[i*10] = -flag_width/2 + i*shift;
@@ -129,7 +133,37 @@ void Renderer::Init(SDL_Window *_window, int w, int h)
     vertices[(rect_number + 2)*10+8] = -1.0f;
     vertices[(rect_number + 2)*10+9] = 0.0f;
 
-    GLuint indices[(rect_number+1) * 6];
+
+    //Плоскость
+    //верхняя левая точка
+    vertices[(rect_number + 3)*10] = -flag_width/2 - shift;
+    vertices[(rect_number + 3)*10+1] = -3*flag_height/2;
+    vertices[(rect_number + 3)*10+2] = 0.5f;
+    vertices[(rect_number + 3)*10+3] = -2.0f;
+    vertices[(rect_number + 3)*10+4] = 0.0f;
+
+    //нижняя левая точка
+    vertices[(rect_number + 3)*10+5] = -flag_width/2 - shift;
+    vertices[(rect_number + 3)*10+6] = -3*flag_height/2;
+    vertices[(rect_number + 3)*10+7] = -0.5f;
+    vertices[(rect_number + 3)*10+8] = -2.0f;
+    vertices[(rect_number + 3)*10+9] = 0.0f;
+
+    //верхняя правая точка
+    vertices[(rect_number + 4)*10] = flag_width/2 + shift;
+    vertices[(rect_number + 4)*10+1] = -3*flag_height/2;
+    vertices[(rect_number + 4)*10+2] = 0.5f;
+    vertices[(rect_number + 4)*10+3] = -2.0f;
+    vertices[(rect_number + 4)*10+4] = 0.0f;
+
+    //нижняя правая точка
+    vertices[(rect_number + 4)*10+5] = flag_width/2 + shift;
+    vertices[(rect_number + 4)*10+6] = -3*flag_height/2;
+    vertices[(rect_number + 4)*10+7] = -0.5f;
+    vertices[(rect_number + 4)*10+8] = -2.0f;
+    vertices[(rect_number + 4)*10+9] = 0.0f;
+
+    GLuint indices[(rect_number+2) * 6];
     for (int i = 0; i < rect_number; ++i) {
         indices[i*6] = i*2;
         indices[i*6+1] = i*2+2;
@@ -145,27 +179,45 @@ void Renderer::Init(SDL_Window *_window, int w, int h)
     indices[rect_number*6+4] = (rect_number + 1)*2 + 1;
     indices[rect_number*6+5] = (rect_number + 1)*2;
 
-// 1. Создаем буферы
+    indices[rect_number*6+6] = (rect_number + 2)*2;
+    indices[rect_number*6+7] = (rect_number + 2)*2 + 2;
+    indices[rect_number*6+8] = (rect_number + 2)*2 + 3;
+    indices[rect_number*6+9] = (rect_number + 2)*2 + 3;
+    indices[rect_number*6+10] = (rect_number + 2)*2 + 1;
+    indices[rect_number*6+11] = (rect_number + 2)*2;
+
+    // 1. Создаем буферы
     glGenBuffers(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
-// 2. Копируем наши вершины в буфер для OpenGL
-glBindBuffer(GL_ARRAY_BUFFER, VBO);
-glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-// 3. Копируем наши индексы в в буфер для OpenGL
-glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-// 3. Устанавливаем указатели на вершинные атрибуты
-glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-glEnableVertexAttribArray(0);   
-glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-glEnableVertexAttribArray(1);  
-// 4. Отвязываем VAO (НЕ EBO)
-glBindVertexArray(0);
+    // 2. Копируем наши вершины в буфер для OpenGL
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // 3. Копируем наши индексы в в буфер для OpenGL
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    // 3. Устанавливаем указатели на вершинные атрибуты
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);   
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);  
+    // 4. Отвязываем VAO (НЕ EBO)
+    glBindVertexArray(0);
 
-add_shader_program(shaderProgram,"shaders/simple.vert","shaders/simple.frag");
+    add_shader_program(shaderProgram,"shaders/simple.vert","shaders/simple.frag");
+
+    int index = 0;
+    float offset = 0.1f;
+    for(int y = -10; y < 10; y += 2)
+    {
+        for(int x = -10; x < 10; x += 2)
+        {
+            translations[index++] = (float)x / 12.0f + offset;
+            translations[index++] = (float)y / 12.0f + offset;
+        }
+    }
 }
 void Renderer::Render(unsigned char *data, int width, int height, float time)
 {
@@ -186,13 +238,30 @@ void Renderer::Render(unsigned char *data, int width, int height, float time)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 projection = glm::mat4(1.0f);
+    model = glm::rotate(model, glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    view = glm::translate(view, glm::vec3(0.0f, 0.3f, -2.0f));
+    projection = glm::perspective(glm::radians(45.0f), float(width) / float(height), 0.1f, 100.0f);
+
     glUseProgram(shaderProgram);
     glUniform1f(glGetUniformLocation(shaderProgram, "Time"), time);
     glUniform1f(glGetUniformLocation(shaderProgram, "flag_width"), flag_width);
-    //glUniform3f(glGetUniformLocation(shaderProgram, "color"),0,1,0);
+
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    glUniform1fv(glGetUniformLocation(shaderProgram, "offsets"), 200, translations);
+
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, (rect_number+1)*6, GL_UNSIGNED_INT, 0);
+
+    //glDrawElements(GL_TRIANGLES, (rect_number+1)*6, GL_UNSIGNED_INT, 0);
+    glDrawElementsInstanced(GL_TRIANGLES, (rect_number+1)*6, GL_UNSIGNED_INT, 0, 100);
+    //glBindVertexArray(VAO + (rect_number+1)*6);
+    //glDrawElements(GL_TRIANGLES, (rect_number)*6, GL_UNSIGNED_INT, 0);
+
     glBindVertexArray(0);
 }
 void Renderer::Close()

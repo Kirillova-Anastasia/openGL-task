@@ -16,4 +16,5 @@ private:
     SDL_Window *window;
     int width, height;
     float flag_width, flag_height;
+    GLfloat translations[200];
 };
