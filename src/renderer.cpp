@@ -209,6 +209,7 @@ void Renderer::Init(SDL_Window *_window, int w, int h)
     add_shader_program(shaderProgram,"shaders/simple.vert","shaders/simple.frag");
 
     int index = 0;
+    int motion_index = 0;
     float offset = 0.1f;
     for(int y = -10; y < 10; y += 2)
     {
