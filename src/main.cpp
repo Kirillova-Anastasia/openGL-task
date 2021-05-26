@@ -43,6 +43,7 @@ int main()
     int width_tex = 0, height_tex = 0, nrChannels = 0;
     unsigned char *data = stbi_load("src/flag.jpg", &width_tex, &height_tex, &nrChannels, 0);
     if (data) {
+        float time = 0;
         while (running)
         {
             while (SDL_PollEvent(&event) != 0)
@@ -60,7 +61,7 @@ int main()
             glClearColor(0.3,0.3,0.3,1);
             glClear(GL_COLOR_BUFFER_BIT);
             // Обновление и рисование сцены
-            renderer.Render(data, width_tex, height_tex);
+            renderer.Render(data, width_tex, height_tex, time++);
             // В конце - вывод нарисованного кадра в окно на экране
             SDL_GL_SwapWindow(window);
         }

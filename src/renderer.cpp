@@ -81,7 +81,8 @@ void Renderer::Init(SDL_Window *_window, int w, int h)
     height = h;
 
     GLfloat scale = 0.1f;
-    GLfloat flag_width = 4*scale,flag_height = 3*scale;
+    flag_width = 3*scale;
+    flag_height = 3*scale;
     GLfloat shift = flag_width / rect_number, tex_shift = 1.0f / rect_number;
     GLfloat vertices[(rect_number + 1) * 10 + 20];
     for (int i = 0; i < rect_number + 1; ++i) {
@@ -166,7 +167,7 @@ glBindVertexArray(0);
 
 add_shader_program(shaderProgram,"shaders/simple.vert","shaders/simple.frag");
 }
-void Renderer::Render(unsigned char *data, int width, int height)
+void Renderer::Render(unsigned char *data, int width, int height, float time)
 {
     unsigned int texture;
     // Загрузка и создание текстуры
@@ -186,6 +187,8 @@ void Renderer::Render(unsigned char *data, int width, int height)
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glUseProgram(shaderProgram);
+    glUniform1f(glGetUniformLocation(shaderProgram, "Time"), time);
+    glUniform1f(glGetUniformLocation(shaderProgram, "flag_width"), flag_width);
     //glUniform3f(glGetUniformLocation(shaderProgram, "color"),0,1,0);
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);
