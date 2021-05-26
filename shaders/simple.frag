@@ -12,9 +12,9 @@ void main()
 {
     if (TexCoord.x >= 0.0f) {
         fragColor = texture(ourTexture, TexCoord);
-    } else if (TexCoord.x > -2.0f) {
+    } else if (TexCoord.x == -1.0f) {
         fragColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
     } else {
-        fragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        fragColor = vec4(0.7f, 0.7f, 0.7f, 0.7f);
     }
 }

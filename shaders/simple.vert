@@ -16,7 +16,7 @@ void main()
 {
     vec3 animatedPosition;
     animatedPosition = position;
-    if (animatedPosition.x > -flag_width/3.0f) {
+    if (animatedPosition.x > -flag_width/3.0f && vertTextureCoord.x >= 0.0f) {
         float len = (0.12 + animatedPosition.x) * (0.12 + animatedPosition.x); 
         float shift = sin(Time *0.08 + (animatedPosition.x + flag_width/3.0f)*15.0)*len;
         animatedPosition.y += shift;
